@@ -16,7 +16,6 @@ type
   protected
     procedure DoRun; override;
     procedure LoadGraph(Graph : TGraph; InputFile : String);
-    procedure PrintPath(Path: array of Integer; Length: Integer);
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -71,7 +70,10 @@ begin
 
   if Task is ITaskBestPath then
   begin
+    Write('Best path: ');
     (Task as ITaskBestPath).GetBestPath.Print;
+    Writeln;
+    Writeln('Best weight: ', (Task as ITaskBestPath).GetBestPath.GetWeight);
   end;
 
   Graph.Destroy;
@@ -103,18 +105,6 @@ begin
         Graph.AddEdge(Point1, Point2, Weight);
     end;
     CloseFile(F);
-end;
-
-procedure TMyApplication.PrintPath(Path: array of Integer; Length: Integer);
-var
-  Index: Integer;
-begin
-  for Index := 0 to Length - 1 do
-  begin
-    if (Index > 0) then
-      Write(' -> ');
-    Write(Path[Index]);
-  end;
 end;
 
 constructor TMyApplication.Create(TheOwner: TComponent);
