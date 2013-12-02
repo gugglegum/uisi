@@ -8,22 +8,22 @@ uses
   Classes, SysUtils;
 
 const
-  MaxPoints = 20;
+  MaxPoints = 64;
   MaxEdges = MaxPoints * (MaxPoints - 1) div 2;
 
 type
-  TGraphEdge = record
-    Point1, point2: integer;
-    weight: integer;
+  TGraphEdge = Record
+    Point1, Point2: integer;
+    Weight: integer;
   end;
 
   { TGraph }
 
-  TGraph = class
+  TGraph = Class
   private
-    _numPoints: integer;
-    _numEdges: integer;
-    _edges: array[0 .. MaxEdges - 1] of TGraphEdge;
+    FNumPoints: integer;
+    FNumEdges: integer;
+    FEdges: array[0 .. MaxEdges - 1] of TGraphEdge;
 
   public
     constructor Create;
@@ -36,13 +36,32 @@ type
     function GetFirstOutgoingEdgeIndex(Point: Integer): Integer;
   end;
 
+  { TGraphPath }
+
+  TGraphPath = Class
+  private
+    FPoints: array[0 .. MaxPoints] of Integer;
+    FLength: Integer;
+    FWeight: Integer;
+  public
+    constructor Create;
+    procedure Clean;
+    procedure AddPoint(Point, Weight: Integer);
+    procedure RemovePoint(Weight: Integer);
+    function GetLength: Integer;
+    function GetWeight: Integer;
+    function GetPoint(Index: Integer): Integer;
+    procedure CopyFrom(GraphPath: TGraphPath);
+    procedure Print;
+  end;
+
 
 implementation
 
 constructor TGraph.Create;
 begin
-  _numPoints := 0;
-  _numEdges := 0;
+  FNumPoints := 0;
+  FNumEdges := 0;
 end;
 
 function TGraph.HasEdge(Point1, Point2: Integer): Boolean;
@@ -50,9 +69,9 @@ var
   I: Integer;
 begin
   Result := False;
-  for I := 0 to _numEdges - 1 do
+  for I := 0 to FNumEdges - 1 do
   begin
-    if ((_edges[i].Point1 = Point1) and (_edges[i].Point2 = Point2)) then
+    if ((FEdges[i].Point1 = Point1) and (FEdges[i].Point2 = Point2)) then
     begin
       Result := True;
       break;
@@ -68,43 +87,43 @@ begin
     raise EInOutError.Create('Too small point number value');
   if ((Point1 > MaxPoints) or (Point2 > MaxPoints)) then
     raise EInOutError.Create('Too big point number value');
-  if (_numEdges > MaxEdges - 1) then
+  if (FNumEdges > MaxEdges - 1) then
     raise EInOutError.Create('Too many edges (max ' + IntToStr(MaxEdges) + ')');
   if (Weight < 0) then
     raise ERangeError.Create('Weight of graph edge must not be negative');
-  _edges[_numEdges].Point1 := Point1;
-  _edges[_numEdges].Point2 := Point2;
-  _edges[_numEdges].Weight := Weight;
-  Inc(_numEdges);
-  if (Point1 > _numPoints) then
-    _numPoints := Point1;
-  if (Point2 > _numPoints) then
-    _numPoints := Point2;
+  FEdges[FNumEdges].Point1 := Point1;
+  FEdges[FNumEdges].Point2 := Point2;
+  FEdges[FNumEdges].Weight := Weight;
+  Inc(FNumEdges);
+  if (Point1 > FNumPoints) then
+    FNumPoints := Point1;
+  if (Point2 > FNumPoints) then
+    FNumPoints := Point2;
 end;
 
 function TGraph.GetEdge(Index: Integer): TGraphEdge;
 begin
-  if (Index < 0) or (Index > _numEdges - 1) then
+  if (Index < 0) or (Index > FNumEdges - 1) then
     raise ERangeError.Create('Edge index is out of range');
-  Result := _edges[Index];
+  Result := FEdges[Index];
 end;
 
 function TGraph.GetNumEdges: Integer;
 begin
-  Result := _numEdges;
+  Result := FNumEdges;
 end;
 
 function TGraph.GetNumPoints: Integer;
 begin
-  Result := _numPoints;
+  Result := FNumPoints;
 end;
 
 function TGraph.GetNextOutgoingEdgeIndex(Point, Offset: Integer): Integer;
 begin
   Result := -1;
-  for Offset := Offset + 1 to _numEdges - 1 do
+  for Offset := Offset + 1 to FNumEdges - 1 do
   begin
-    if (_edges[Offset].Point1 = Point) then
+    if (FEdges[Offset].Point1 = Point) then
     begin
       Result := Offset;
       break;
@@ -116,6 +135,69 @@ function TGraph.GetFirstOutgoingEdgeIndex(Point: Integer): Integer;
 begin
   Result := GetNextOutgoingEdgeIndex(Point, -1);
 end;
+
+
+constructor TGraphPath.Create;
+begin
+  Clean;
+end;
+
+procedure TGraphPath.Clean;
+begin
+  FLength := 0;
+  FWeight := 0;
+end;
+
+procedure TGraphPath.AddPoint(Point, Weight: Integer);
+begin
+  FPoints[FLength] := Point;
+  Inc(FLength);
+  Inc(FWeight, Weight);
+end;
+
+procedure TGraphPath.RemovePoint(Weight: Integer);
+begin
+  Dec(FLength);
+  Dec(FWeight, Weight);
+end;
+
+function TGraphPath.GetLength: Integer;
+begin
+  Result := FLength;
+end;
+
+function TGraphPath.GetWeight: Integer;
+begin
+  Result := FWeight;
+end;
+
+function TGraphPath.GetPoint(Index: Integer): Integer;
+begin
+  Result := FPoints[Index];
+end;
+
+procedure TGraphPath.CopyFrom(GraphPath: TGraphPath);
+var
+  Index: Integer;
+begin
+  Clean;
+  for Index := 0 to GraphPath.GetLength - 1 do
+    AddPoint(GraphPath.GetPoint(Index), 0);
+  FWeight := GraphPath.GetWeight;
+end;
+
+procedure TGraphPath.Print;
+var
+  Index: Integer;
+begin
+  for Index := 0 to FLength - 1 do
+  begin
+    if (Index > 0) then
+      Write(' -> ');
+    Write(FPoints[Index]);
+  end;
+end;
+
 
 end.
 

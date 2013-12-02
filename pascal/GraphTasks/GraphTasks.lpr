@@ -6,7 +6,7 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  Classes, SysUtils, CustApp, GraphModel, Task1;
+  Classes, SysUtils, CustApp, GraphModel, Task1, TaskBase;
 
 type
 
@@ -16,6 +16,7 @@ type
   protected
     procedure DoRun; override;
     procedure LoadGraph(Graph : TGraph; InputFile : String);
+    procedure PrintPath(Path: array of Integer; Length: Integer);
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -30,7 +31,7 @@ var
   TaskNumber : Integer;
   InputFile : String;
   Graph : TGraph;
-  Task : TTask1;
+  Task : ITask;
 begin
   // quick check parameters
   ErrorMsg:=CheckOptions('h','help');
@@ -62,11 +63,19 @@ begin
 
   case TaskNumber of
     1 : Task := TTask1.Create(Graph);
-  else
-    Writeln('Invalid task number: ', TaskNumber);
+    else
+      Writeln('Invalid task number: ', TaskNumber);
   end;
 
   Task.Execute;
+
+  if Task is ITaskBestPath then
+  begin
+    (Task as ITaskBestPath).GetBestPath.Print;
+  end;
+
+  Graph.Destroy;
+  Graph := nil;
 
   // stop program loop
   Terminate;
@@ -88,12 +97,24 @@ begin
     end;
     while (not Eof(F)) do
     begin
-        Readln(F, point1, point2, weight);
+        Readln(F, Point1, Point2, Weight);
         if ((Point1 = 0) AND (Point2 = 0)) then
             continue;     // Пропуск пустой строки
         Graph.AddEdge(Point1, Point2, Weight);
     end;
     CloseFile(F);
+end;
+
+procedure TMyApplication.PrintPath(Path: array of Integer; Length: Integer);
+var
+  Index: Integer;
+begin
+  for Index := 0 to Length - 1 do
+  begin
+    if (Index > 0) then
+      Write(' -> ');
+    Write(Path[Index]);
+  end;
 end;
 
 constructor TMyApplication.Create(TheOwner: TComponent);
@@ -121,7 +142,7 @@ var
 {$R *.res}
 
 begin
-  Application:=TMyApplication.Create(nil);
+  Application := TMyApplication.Create(nil);
   Application.Title := 'Graph Tasks';
   Application.Run;
   Application.Free;

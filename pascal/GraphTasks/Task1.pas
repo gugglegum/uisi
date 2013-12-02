@@ -5,51 +5,42 @@ unit Task1;
 interface
 
 uses
-  Classes, SysUtils, GraphModel;
+  Classes, SysUtils, GraphModel, TaskBase;
 
 type
 
   { TTask1 }
 
-  TTask1 = class
+  TTask1 = Class(TInterfacedObject, ITask, ITaskBestPath)
   private
-    _graph: TGraph;
-    _bestPath: array[0 .. MaxPoints] of Integer;
-    _bestPathLength: Integer;
-    _bestPathWeight: Integer;
-    _currentPath: array[0 .. MaxPoints] of Integer;
-    _currentPathLength: Integer;
-    _currentPathWeight: Integer;
+    FGraph: TGraph;
+    FBestPath, FCurrentPath: TGraphPath;
+    procedure Recursion(Point, Weight: Integer);
+    function HasPointCurrentPath(Point: Integer): Boolean;
   public
     constructor Create(Graph: TGraph);
     procedure Execute;
-    procedure Recursion(Point, Weight: Integer);
-    function HasPointCurrentPath(Point: Integer): Boolean;
-    procedure MakeCurrentPathBest;
-    procedure PrintBestPath;
-    procedure PrintCurrentPath;
+    function GetBestPath: TGraphPath;
   end;
 
 implementation
 
 constructor TTask1.Create(Graph: TGraph);
 begin
-  _graph := Graph;
-  _bestPathLength := 0;
-  _currentPathLength := 0;
+  FGraph := Graph;
+  FBestPath := TGraphPath.Create;
+  FCurrentPath := TGraphPath.Create;
 end;
 
 procedure TTask1.Execute;
 var
-  Point : integer;
+  Point : Integer;
 begin
-  for Point := 1 to _graph.GetNumPoints() do
+  for Point := 1 to FGraph.GetNumPoints() do
   begin
-    _currentPathLength := 0;
+    FCurrentPath.Clean;
     Recursion(Point, 0);
   end;
-
-  PrintBestPath();
 end;
 
 procedure TTask1.Recursion(Point, Weight: Integer);
@@ -60,39 +51,33 @@ var
 begin
   HasPoint := HasPointCurrentPath(Point);
 
-  _currentPath[_currentPathLength] := Point;
-  Inc(_currentPathLength);
-  Inc(_currentPathWeight, Weight);
-  //PrintCurrentPath();
+  FCurrentPath.AddPoint(Point, Weight);
 
-  if (_currentPathLength > 1) AND (Point = _currentPath[0]) then
+  if (FCurrentPath.GetLength > 1) AND (Point = FCurrentPath.GetPoint(0)) then
   begin
-    if (_bestPathLength = 0) OR (_currentPathWeight < _bestPathWeight) then
+    if (FBestPath.GetLength = 0) OR (FCurrentPath.GetWeight < FBestPath.GetWeight) then
     begin
-      MakeCurrentPathBest();
+      FBestPath.CopyFrom(FCurrentPath);
     end;
-    Dec(_currentPathLength);
-    Dec(_currentPathWeight, weight);
+    FCurrentPath.RemovePoint(Weight);
     Exit;
   end;
 
-  if ((HasPoint) OR (_currentPathLength > MaxPoints)
-    OR ((_bestPathLength > 0) AND (_currentPathWeight >= _bestPathWeight))) then
+  if ((HasPoint) OR (FCurrentPath.GetLength > MaxPoints)
+    OR ((FBestPath.GetLength > 0) AND (FCurrentPath.GetWeight >= FBestPath.GetWeight))) then
   begin
-    Dec(_currentPathLength);
-    Dec(_currentPathWeight, weight);
+    FCurrentPath.RemovePoint(Weight);
     Exit;
   end;
 
-  Offset := _graph.GetNextOutgoingEdgeIndex(Point, -1);
+  Offset := FGraph.GetFirstOutgoingEdgeIndex(Point);
   while (Offset <> -1) do
   begin
-    Edge := _graph.GetEdge(Offset);
+    Edge := FGraph.GetEdge(Offset);
     Recursion(Edge.Point2, Edge.Weight);
-    Offset := _graph.GetNextOutgoingEdgeIndex(Point, Offset);
+    Offset := FGraph.GetNextOutgoingEdgeIndex(Point, Offset);
   end;
-  Dec(_currentPathLength);
-  Dec(_currentPathWeight, Weight);
+  FCurrentPath.RemovePoint(Weight);
 end;
 
 function TTask1.HasPointCurrentPath(Point: Integer): Boolean;
@@ -100,61 +85,17 @@ var
   Index: Integer;
 begin
   Result := False;
-  for Index := 0 to _currentPathLength - 1 do
-    if (_currentPath[Index] = Point) then
+  for Index := 0 to FCurrentPath.GetLength - 1 do
+    if (FCurrentPath.GetPoint(Index) = Point) then
     begin
       Result := True;
       break;
     end;
 end;
 
-procedure TTask1.MakeCurrentPathBest;
-var
-  Index: Integer;
+function TTask1.GetBestPath: TGraphPath;
 begin
-  for Index := 0 to _currentPathLength - 1 do
-    _bestPath[Index] := _currentPath[Index];
-  _bestPathLength := _currentPathLength;
-  _bestPathWeight := _currentPathWeight;
-end;
-
-procedure TTask1.PrintBestPath;
-var
-  Index: Integer;
-begin
-  if (_bestPathLength > 0) then
-  begin
-    write('The shortest path is: ');
-    for Index := 0 to _bestPathLength - 1 do
-    begin
-      if (Index > 0) then
-        Write(' -> ');
-      Write(_bestPath[index]);
-    end;
-    Writeln();
-    Writeln('The best cycle weight is ', _bestPathWeight);
-  end
-  else
-    Writeln('There is no cycle, sorry.');
-end;
-
-procedure TTask1.PrintCurrentPath;
-var
-  Index: Integer;
-begin
-  if (_currentPathLength > 0) then
-  begin
-    write('The current path is: ');
-    for index := 0 to _currentPathLength - 1 do
-    begin
-      if (index > 0) then
-        write(' -> ');
-      write(_currentPath[index]);
-    end;
-    writeln();
-  end
-  else
-    writeln('There is no cycle, sorry.');
+  Result := FBestPath;
 end;
 
 end.
