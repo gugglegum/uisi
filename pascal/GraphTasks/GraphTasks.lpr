@@ -6,8 +6,7 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  Classes, SysUtils, CustApp, GraphModel
-  { you can add units after this };
+  Classes, SysUtils, CustApp, GraphModel, Task1;
 
 type
 
@@ -16,6 +15,7 @@ type
   TMyApplication = class(TCustomApplication)
   protected
     procedure DoRun; override;
+    procedure LoadGraph(Graph : TGraph; InputFile : String);
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -27,6 +27,10 @@ type
 procedure TMyApplication.DoRun;
 var
   ErrorMsg: String;
+  TaskNumber : Integer;
+  InputFile : String;
+  Graph : TGraph;
+  Task : TTask1;
 begin
   // quick check parameters
   ErrorMsg:=CheckOptions('h','help');
@@ -43,10 +47,53 @@ begin
     Exit;
   end;
 
-  { add your program here }
+  if (GetParamCount < 1) OR (GetParamCount > 2) then
+  begin
+    writeln('Invalid amount of arguments. Use -h (or --help) option for help.');
+    Terminate;
+    Exit;
+  end;
+
+  TaskNumber := StrToInt(GetParams(1));
+  InputFile := GetParams(2);
+
+  Graph := TGraph.Create;
+  LoadGraph(Graph, InputFile);
+
+  case TaskNumber of
+    1 : Task := TTask1.Create(Graph);
+  else
+    Writeln('Invalid task number: ', TaskNumber);
+  end;
+
+  Task.Execute;
 
   // stop program loop
   Terminate;
+end;
+
+procedure TMyApplication.LoadGraph(Graph : TGraph; InputFile : String);
+var
+    F : text;
+    Point1, Point2, Weight : integer;
+begin
+    if InputFile <> '' then
+    begin
+      System.Assign(F, InputFile);
+      Reset(F);
+    end
+    else
+    begin
+      F := input;   // Assign F to STDIN
+    end;
+    while (not Eof(F)) do
+    begin
+        Readln(F, point1, point2, weight);
+        if ((Point1 = 0) AND (Point2 = 0)) then
+            continue;     // Пропуск пустой строки
+        Graph.AddEdge(Point1, Point2, Weight);
+    end;
+    CloseFile(F);
 end;
 
 constructor TMyApplication.Create(TheOwner: TComponent);
@@ -62,8 +109,10 @@ end;
 
 procedure TMyApplication.WriteHelp;
 begin
-  { add your help code here }
-  writeln('Usage: ',ExeName,' -h');
+  Writeln('Graph Tasks');
+  Writeln('===========');
+  Writeln;
+  Writeln('Usage: ', ExeName, ' <Task> [<File>]');
 end;
 
 var
@@ -73,7 +122,7 @@ var
 
 begin
   Application:=TMyApplication.Create(nil);
-  Application.Title:='Graph Tasks';
+  Application.Title := 'Graph Tasks';
   Application.Run;
   Application.Free;
 end.
