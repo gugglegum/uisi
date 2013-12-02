@@ -6,7 +6,7 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  Classes, SysUtils, CustApp, GraphModel, Task1, TaskBase;
+  Classes, SysUtils, CustApp, GraphModel, TaskBase, Task1, Task2;
 
 type
 
@@ -62,6 +62,7 @@ begin
 
   case TaskNumber of
     1 : Task := TTask1.Create(Graph);
+    2 : Task := TTask2.Create(Graph);
     else
       Writeln('Invalid task number: ', TaskNumber);
   end;
