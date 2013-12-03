@@ -11,6 +11,7 @@ uses {$IFDEF UNIX} {$IFDEF UseCThreads}
   TaskBase,
   Task1,
   Task2,
+  Task3,
   Task5,
   Task6;
 
@@ -73,6 +74,7 @@ type
     case TaskNumber of
       1: Task := TTask1.Create(Graph);
       2: Task := TTask2.Create(Graph);
+      3: Task := TTask3.Create(Graph, StrToInt(GetOptionValue('from-point')));
       5: Task := TTask5.Create(Graph, StrToInt(GetOptionValue('from-point')));
       6: Task := TTask6.Create(Graph);
       else
@@ -134,7 +136,7 @@ type
     Writeln;
     Writeln('Options:');
     Writeln;
-    Writeln('  --from-point=N        Starting point for task #5');
+    Writeln('  --from-point=N        Starting point for task #3 & #5');
     Writeln;
   end;
 

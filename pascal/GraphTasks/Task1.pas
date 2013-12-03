@@ -11,7 +11,7 @@ type
 
   { TTask1 }
 
-  TTask1 = class(TInterfacedObject, ITask, ITaskBestPath)
+  TTask1 = class(TInterfacedObject, ITask)
   private
     FGraph: TGraph;
     FBestPath, FCurrentPath: TGraphPath;
@@ -20,7 +20,7 @@ type
   public
     constructor Create(Graph: TGraph);
     procedure Execute;
-    function GetBestPath: TGraphPath;
+    procedure PrintPath(Path: TGraphPath);
   end;
 
 implementation
@@ -42,14 +42,18 @@ begin
     Recursion(Point, 0);
   end;
 
-  if (GetBestPath.GetLength > 0) then
+  PrintPath(FBestPath);
+end;
+
+procedure TTask1.PrintPath(Path: TGraphPath);
+begin
+  if (Path.GetLength > 0) then
   begin
-    GetBestPath.Print;
-    Writeln(' (weight: ', GetBestPath.GetWeight, ')');
+    Path.Print;
+    Writeln(' (weight: ', FBestPath.GetWeight, ')');
   end
   else
     Writeln('no path');
-
 end;
 
 procedure TTask1.Recursion(Point, Weight: integer);
@@ -98,11 +102,6 @@ begin
       Result := True;
       break;
     end;
-end;
-
-function TTask1.GetBestPath: TGraphPath;
-begin
-  Result := FBestPath;
 end;
 
 end.

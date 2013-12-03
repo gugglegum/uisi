@@ -11,6 +11,14 @@ $testTasks = [
         [ 'graph2.txt', 'test2_graph2.txt' ],
         [ 'graph3.txt', 'test2_graph3.txt' ],
     ],
+    3 => [
+        [ 'graph1.txt --from-point=1', 'test3_graph1_from1.txt' ],
+        [ 'graph1.txt --from-point=2', 'test3_graph1_from2.txt' ],
+        [ 'graph1.txt --from-point=3', 'test3_graph1_from3.txt' ],
+        [ 'graph3.txt --from-point=1', 'test3_graph3_from1.txt' ],
+        [ 'graph3.txt --from-point=2', 'test3_graph3_from2.txt' ],
+        [ 'graph3.txt --from-point=3', 'test3_graph3_from3.txt' ],
+    ],
     5 => [
         [ 'graph1.txt --from-point=1', 'test5_graph1_from1.txt' ],
         [ 'graph1.txt --from-point=2', 'test5_graph1_from2.txt' ],
