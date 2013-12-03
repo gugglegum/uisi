@@ -1,0 +1,2 @@
+Best path: 1 -> 9 -> 3 -> 2 -> 4 -> 1
+Best weight: 22
