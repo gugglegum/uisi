@@ -12,14 +12,14 @@ const
   MaxEdges = MaxPoints * (MaxPoints - 1) div 2;
 
 type
-  TGraphEdge = Record
+  TGraphEdge = record
     Point1, Point2: integer;
     Weight: integer;
   end;
 
   { TGraph }
 
-  TGraph = Class
+  TGraph = class
   private
     FNumPoints: integer;
     FNumEdges: integer;
@@ -27,30 +27,30 @@ type
 
   public
     constructor Create;
-    function HasEdge(Point1, Point2: integer): Boolean;
-    procedure AddEdge(Point1, Point2, Weight: Integer);
-    function GetEdge(Index: Integer): TGraphEdge;
-    function GetNumEdges: Integer;
-    function GetNumPoints: Integer;
-    function GetNextOutgoingEdgeIndex(Point, Offset: Integer): Integer;
-    function GetFirstOutgoingEdgeIndex(Point: Integer): Integer;
+    function HasEdge(Point1, Point2: integer): boolean;
+    procedure AddEdge(Point1, Point2, Weight: integer);
+    function GetEdge(Index: integer): TGraphEdge;
+    function GetNumEdges: integer;
+    function GetNumPoints: integer;
+    function GetNextOutgoingEdgeIndex(Point, Offset: integer): integer;
+    function GetFirstOutgoingEdgeIndex(Point: integer): integer;
   end;
 
   { TGraphPath }
 
-  TGraphPath = Class
+  TGraphPath = class
   private
-    FPoints: array[0 .. MaxPoints] of Integer;
-    FLength: Integer;
-    FWeight: Integer;
+    FPoints: array[0 .. MaxPoints] of integer;
+    FLength: integer;
+    FWeight: integer;
   public
     constructor Create;
     procedure Clean;
-    procedure AddPoint(Point, Weight: Integer);
-    procedure RemovePoint(Weight: Integer);
-    function GetLength: Integer;
-    function GetWeight: Integer;
-    function GetPoint(Index: Integer): Integer;
+    procedure AddPoint(Point, Weight: integer);
+    procedure RemovePoint(Weight: integer);
+    function GetLength: integer;
+    function GetWeight: integer;
+    function GetPoint(Index: integer): integer;
     procedure CopyFrom(GraphPath: TGraphPath);
     procedure Print;
   end;
@@ -64,9 +64,9 @@ begin
   FNumEdges := 0;
 end;
 
-function TGraph.HasEdge(Point1, Point2: Integer): Boolean;
+function TGraph.HasEdge(Point1, Point2: integer): boolean;
 var
-  I: Integer;
+  I: integer;
 begin
   Result := False;
   for I := 0 to FNumEdges - 1 do
@@ -79,7 +79,7 @@ begin
   end;
 end;
 
-procedure TGraph.AddEdge(Point1, Point2, Weight: Integer);
+procedure TGraph.AddEdge(Point1, Point2, Weight: integer);
 begin
   if (HasEdge(Point1, Point2)) then
     raise EInOutError.Create('Duplicate edge');
@@ -101,24 +101,24 @@ begin
     FNumPoints := Point2;
 end;
 
-function TGraph.GetEdge(Index: Integer): TGraphEdge;
+function TGraph.GetEdge(Index: integer): TGraphEdge;
 begin
   if (Index < 0) or (Index > FNumEdges - 1) then
     raise ERangeError.Create('Edge index is out of range');
   Result := FEdges[Index];
 end;
 
-function TGraph.GetNumEdges: Integer;
+function TGraph.GetNumEdges: integer;
 begin
   Result := FNumEdges;
 end;
 
-function TGraph.GetNumPoints: Integer;
+function TGraph.GetNumPoints: integer;
 begin
   Result := FNumPoints;
 end;
 
-function TGraph.GetNextOutgoingEdgeIndex(Point, Offset: Integer): Integer;
+function TGraph.GetNextOutgoingEdgeIndex(Point, Offset: integer): integer;
 begin
   Result := -1;
   for Offset := Offset + 1 to FNumEdges - 1 do
@@ -131,7 +131,7 @@ begin
   end;
 end;
 
-function TGraph.GetFirstOutgoingEdgeIndex(Point: Integer): Integer;
+function TGraph.GetFirstOutgoingEdgeIndex(Point: integer): integer;
 begin
   Result := GetNextOutgoingEdgeIndex(Point, -1);
 end;
@@ -148,37 +148,37 @@ begin
   FWeight := 0;
 end;
 
-procedure TGraphPath.AddPoint(Point, Weight: Integer);
+procedure TGraphPath.AddPoint(Point, Weight: integer);
 begin
   FPoints[FLength] := Point;
   Inc(FLength);
   Inc(FWeight, Weight);
 end;
 
-procedure TGraphPath.RemovePoint(Weight: Integer);
+procedure TGraphPath.RemovePoint(Weight: integer);
 begin
   Dec(FLength);
   Dec(FWeight, Weight);
 end;
 
-function TGraphPath.GetLength: Integer;
+function TGraphPath.GetLength: integer;
 begin
   Result := FLength;
 end;
 
-function TGraphPath.GetWeight: Integer;
+function TGraphPath.GetWeight: integer;
 begin
   Result := FWeight;
 end;
 
-function TGraphPath.GetPoint(Index: Integer): Integer;
+function TGraphPath.GetPoint(Index: integer): integer;
 begin
   Result := FPoints[Index];
 end;
 
 procedure TGraphPath.CopyFrom(GraphPath: TGraphPath);
 var
-  Index: Integer;
+  Index: integer;
 begin
   Clean;
   for Index := 0 to GraphPath.GetLength - 1 do
@@ -188,7 +188,7 @@ end;
 
 procedure TGraphPath.Print;
 var
-  Index: Integer;
+  Index: integer;
 begin
   for Index := 0 to FLength - 1 do
   begin

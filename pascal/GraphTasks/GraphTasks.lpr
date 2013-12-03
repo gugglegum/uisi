@@ -2,11 +2,17 @@ program GraphTasks;
 
 {$mode objfpc}{$H+}
 
-uses
-  {$IFDEF UNIX}{$IFDEF UseCThreads}
-  cthreads,
-  {$ENDIF}{$ENDIF}
-  Classes, SysUtils, CustApp, GraphModel, TaskBase, Task1, Task2;
+uses {$IFDEF UNIX} {$IFDEF UseCThreads}
+  cthreads, {$ENDIF} {$ENDIF}
+  Classes,
+  SysUtils,
+  CustApp,
+  GraphModel,
+  TaskBase,
+  Task1,
+  Task2,
+  Task5,
+  Task6;
 
 type
 
@@ -15,80 +21,77 @@ type
   TMyApplication = class(TCustomApplication)
   protected
     procedure DoRun; override;
-    procedure LoadGraph(Graph : TGraph; InputFile : String);
+    procedure LoadGraph(Graph: TGraph; InputFile: string);
+    function GetNonOptParamCount: integer;
+    function GetNonOptParams(Index: integer): string;
   public
     constructor Create(TheOwner: TComponent); override;
-    destructor Destroy; override;
+    //destructor Destroy; override;
     procedure WriteHelp; virtual;
   end;
 
-{ TMyApplication }
+  { TMyApplication }
 
-procedure TMyApplication.DoRun;
-var
-  ErrorMsg: String;
-  TaskNumber : Integer;
-  InputFile : String;
-  Graph : TGraph;
-  Task : ITask;
-begin
-  // quick check parameters
-  ErrorMsg:=CheckOptions('h','help');
-  if ErrorMsg<>'' then begin
-    ShowException(Exception.Create(ErrorMsg));
-    Terminate;
-    Exit;
-  end;
-
-  // parse parameters
-  if HasOption('h','help') then begin
-    WriteHelp;
-    Terminate;
-    Exit;
-  end;
-
-  if (GetParamCount < 1) OR (GetParamCount > 2) then
+  procedure TMyApplication.DoRun;
+  var
+    ErrorMsg: string;
+    TaskNumber: integer;
+    InputFile: string;
+    Graph: TGraph;
+    Task: ITask;
   begin
-    writeln('Invalid amount of arguments. Use -h (or --help) option for help.');
+    // quick check parameters
+    ErrorMsg := CheckOptions('h', 'help from-point:');
+    if ErrorMsg <> '' then
+    begin
+      ShowException(Exception.Create(ErrorMsg));
+      Terminate;
+      Exit;
+    end;
+
+    // parse parameters
+    if HasOption('h', 'help') then
+    begin
+      WriteHelp;
+      Terminate;
+      Exit;
+    end;
+
+    if (GetNonOptParamCount < 1) or (GetNonOptParamCount > 2) then
+    begin
+      writeln('Invalid amount of arguments. Use -h (or --help) option for help.');
+      Terminate;
+      Exit;
+    end;
+
+    TaskNumber := StrToInt(GetNonOptParams(1));
+    InputFile := GetNonOptParams(2);
+
+    Graph := TGraph.Create;
+    LoadGraph(Graph, InputFile);
+
+    case TaskNumber of
+      1: Task := TTask1.Create(Graph);
+      2: Task := TTask2.Create(Graph);
+      5: Task := TTask5.Create(Graph, StrToInt(GetOptionValue('from-point')));
+      6: Task := TTask6.Create(Graph);
+      else
+        Writeln('Invalid task number: ', TaskNumber);
+    end;
+
+    Task.Execute;
+
+    FreeAndNil(Graph);
+
+    // stop program loop
     Terminate;
-    Exit;
   end;
 
-  TaskNumber := StrToInt(GetParams(1));
-  InputFile := GetParams(2);
-
-  Graph := TGraph.Create;
-  LoadGraph(Graph, InputFile);
-
-  case TaskNumber of
-    1 : Task := TTask1.Create(Graph);
-    2 : Task := TTask2.Create(Graph);
-    else
-      Writeln('Invalid task number: ', TaskNumber);
-  end;
-
-  Task.Execute;
-
-  if Task is ITaskBestPath then
+  procedure TMyApplication.LoadGraph(Graph: TGraph; InputFile: string);
+  var
+    F: Text;
+    Point1, Point2, Weight: integer;
   begin
-    Write('Best path: ');
-    (Task as ITaskBestPath).GetBestPath.Print;
-    Writeln;
-    Writeln('Best weight: ', (Task as ITaskBestPath).GetBestPath.GetWeight);
-  end;
-
-  Graph.Destroy;
-  Graph := nil;
-
-  // stop program loop
-  Terminate;
-end;
-
-procedure TMyApplication.LoadGraph(Graph : TGraph; InputFile : String);
-var
-    F : text;
-    Point1, Point2, Weight : integer;
-begin
     if InputFile <> '' then
     begin
       System.Assign(F, InputFile);
@@ -98,34 +101,78 @@ begin
     begin
       F := input;   // Assign F to STDIN
     end;
-    while (not Eof(F)) do
+    while (not EOF(F)) do
     begin
-        Readln(F, Point1, Point2, Weight);
-        if ((Point1 = 0) AND (Point2 = 0)) then
-            continue;     // Пропуск пустой строки
-        Graph.AddEdge(Point1, Point2, Weight);
+      Readln(F, Point1, Point2, Weight);
+      if ((Point1 = 0) and (Point2 = 0)) then
+        continue;     // Skip empty line
+      Graph.AddEdge(Point1, Point2, Weight);
     end;
     CloseFile(F);
-end;
+  end;
 
-constructor TMyApplication.Create(TheOwner: TComponent);
-begin
-  inherited Create(TheOwner);
-  StopOnException:=True;
-end;
+  constructor TMyApplication.Create(TheOwner: TComponent);
+  begin
+    inherited Create(TheOwner);
+    StopOnException := True;
+  end;
 
-destructor TMyApplication.Destroy;
-begin
-  inherited Destroy;
-end;
+  //destructor TMyApplication.Destroy;
+  //begin
+  //  inherited Destroy;
+  //end;
 
-procedure TMyApplication.WriteHelp;
-begin
-  Writeln('Graph Tasks');
-  Writeln('===========');
-  Writeln;
-  Writeln('Usage: ', ExeName, ' <Task> [<File>]');
-end;
+  procedure TMyApplication.WriteHelp;
+  begin
+    Writeln('Graph Tasks');
+    Writeln('===========');
+    Writeln;
+    Writeln('Usage: ', ExtractFileName(ExeName), ' <TaskNum> [<InFile>] [Options]');
+    Writeln;
+    Writeln('  <TaskNum> - A digit from 1 to 8');
+    Writeln('  <InFile>  - A file name of input graph');
+    Writeln;
+    Writeln('Options:');
+    Writeln;
+    Writeln('  --from-point=N        Starting point for task #5');
+    Writeln;
+  end;
+
+  function TMyApplication.GetNonOptParamCount: integer;
+  var
+    RealParamCount, I: integer;
+    NonOptionParamCount: integer = 0;
+  begin
+    RealParamCount := GetParamCount();
+    for I := 1 to RealParamCount do
+      if GetParams(I)[1] <> '-' then
+        Inc(NonOptionParamCount);
+    Result := NonOptionParamCount;
+  end;
+
+  function TMyApplication.GetNonOptParams(Index: integer): string;
+  var
+    RealParamCount, I: integer;
+    NonOptionParamCount: integer = 0;
+    Found: boolean = False;
+  begin
+    RealParamCount := GetParamCount();
+    for I := 1 to RealParamCount do
+    begin
+      if GetParams(I)[1] <> '-' then
+        Inc(NonOptionParamCount);
+      if NonOptionParamCount = Index then
+      begin
+        Result := inherited GetParams(I);
+        Found := True;
+        break;
+      end;
+    end;
+
+    if not Found then
+      raise ERangeError.Create('Command-line parameter ' + IntToStr(Index) +
+        ' is out of range');
+  end;
 
 var
   Application: TMyApplication;
@@ -138,4 +185,3 @@ begin
   Application.Run;
   Application.Free;
 end.
-

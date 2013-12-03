@@ -1,4 +1,4 @@
-unit Task1;
+unit Task6;
 
 {$mode objfpc}{$H+}
 
@@ -9,13 +9,13 @@ uses
 
 type
 
-  { TTask1 }
+  { TTask6 }
 
-  TTask1 = class(TInterfacedObject, ITask, ITaskBestPath)
+  TTask6 = class(TInterfacedObject, ITask, ITaskBestPath)
   private
     FGraph: TGraph;
     FBestPath, FCurrentPath: TGraphPath;
-    procedure Recursion(Point, Weight: integer);
+    procedure Recursion(Point, TargetPoint, Weight: integer);
     function HasPointCurrentPath(Point: integer): boolean;
   public
     constructor Create(Graph: TGraph);
@@ -25,34 +25,38 @@ type
 
 implementation
 
-constructor TTask1.Create(Graph: TGraph);
+constructor TTask6.Create(Graph: TGraph);
 begin
   FGraph := Graph;
   FBestPath := TGraphPath.Create;
   FCurrentPath := TGraphPath.Create;
 end;
 
-procedure TTask1.Execute;
+procedure TTask6.Execute;
 var
-  Point: integer;
+  FromPoint, ToPoint: integer;
 begin
-  for Point := 1 to FGraph.GetNumPoints() do
-  begin
-    FCurrentPath.Clean;
-    Recursion(Point, 0);
-  end;
+  for FromPoint := 1 to FGraph.GetNumPoints do
+    for ToPoint := 1 to FGraph.GetNumPoints do
+    begin
+      if FromPoint = ToPoint then
+        continue;
+      FCurrentPath.Clean;
+      FBestPath.Clean;
+      Recursion(FromPoint, ToPoint, 0);
 
-  if (GetBestPath.GetLength > 0) then
-  begin
-    GetBestPath.Print;
-    Writeln(' (weight: ', GetBestPath.GetWeight, ')');
-  end
-  else
-    Writeln('no path');
-
+      Write(FromPoint, ' .. ', ToPoint, ' : ');
+      if (GetBestPath.GetLength > 0) then
+      begin
+        GetBestPath.Print;
+        Writeln(' (weight: ', GetBestPath.GetWeight, ')');
+      end
+      else
+        Writeln('no path');
+    end;
 end;
 
-procedure TTask1.Recursion(Point, Weight: integer);
+procedure TTask6.Recursion(Point, TargetPoint, Weight: integer);
 var
   Offset: integer;
   Edge: TGraphEdge;
@@ -62,7 +66,7 @@ begin
 
   FCurrentPath.AddPoint(Point, Weight);
 
-  if (FCurrentPath.GetLength > 1) and (Point = FCurrentPath.GetPoint(0)) then
+  if (FCurrentPath.GetLength > 1) and (Point = TargetPoint) then
   begin
     if (FBestPath.GetLength = 0) or (FCurrentPath.GetWeight < FBestPath.GetWeight) then
       FBestPath.CopyFrom(FCurrentPath);
@@ -81,13 +85,13 @@ begin
   while (Offset <> -1) do
   begin
     Edge := FGraph.GetEdge(Offset);
-    Recursion(Edge.Point2, Edge.Weight);
+    Recursion(Edge.Point2, TargetPoint, Edge.Weight);
     Offset := FGraph.GetNextOutgoingEdgeIndex(Point, Offset);
   end;
   FCurrentPath.RemovePoint(Weight);
 end;
 
-function TTask1.HasPointCurrentPath(Point: integer): boolean;
+function TTask6.HasPointCurrentPath(Point: integer): boolean;
 var
   Index: integer;
 begin
@@ -100,7 +104,7 @@ begin
     end;
 end;
 
-function TTask1.GetBestPath: TGraphPath;
+function TTask6.GetBestPath: TGraphPath;
 begin
   Result := FBestPath;
 end;
