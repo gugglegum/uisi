@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * This script requires PHP 5.4 or better
+ */
+
 $testTasks = [
     1 => [
         [ 'graph1.txt', 'test1_graph1.txt' ],
