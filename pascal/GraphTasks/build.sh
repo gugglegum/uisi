@@ -1,5 +1,5 @@
 #!/bin/sh
-fpc GraphTasks.lpr
+fpc GraphTasks.pas
 rm *.o
 rm *.ppu
 rm *.or
