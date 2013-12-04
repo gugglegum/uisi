@@ -57,6 +57,9 @@ function check($file1, $file2)
     $contents1 = file_get_contents($file1);
     $contents2 = file_get_contents($file2);
 
+    $contents1 = str_replace("\r\n", "\n", $contents1);
+    $contents2 = str_replace("\r\n", "\n", $contents2);
+
     if (trim($contents1) == trim($contents2)) {
         echo '.';
     } else {
