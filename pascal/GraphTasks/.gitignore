@@ -1,4 +1,5 @@
 backup
 lib
-*.exe
+GraphTasks.exe
+GraphTasks
 GraphTasks.lpi

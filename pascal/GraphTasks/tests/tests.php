@@ -43,8 +43,9 @@ $testTasks = [
 
 foreach ($testTasks as $task => $tests) {
     echo "Task{$task}\n";
+    $executable = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '..\\GraphTasks.exe ' : '../GraphTasks';
     foreach ($tests as $test) {
-        exec('..\\GraphTasks.exe ' . $task. ' ' . $test[0] . ' > _test_.tmp');
+        exec("{$executable} {$task} {$test[0]} > _test_.tmp");
         check('_test_.tmp', 'res/' . $test[1]);
         unlink('_test_.tmp');
     }
