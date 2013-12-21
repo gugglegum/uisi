@@ -1,3 +1,6 @@
+//
+// Задача 3: Выполнить обход графа в глубину.
+//
 unit Task3;
 
 {$mode objfpc}{$H+}
@@ -15,10 +18,11 @@ type
   private
     FGraph: TGraph;
     FCurrentPath: TGraphPath;
+    FBypassPath: TGraphPath;
     FFromPoint: integer;
-    procedure Recursion(Point, Weight: integer);
+    procedure Recursion(Point: integer);
     procedure PrintPath(Path: TGraphPath);
-    function HasPointCurrentPath(Point: integer): boolean;
+    function HasPointInPath(Point: integer; Path: TGraphPath): boolean;
   public
     constructor Create(Graph: TGraph; FromPoint: integer);
     procedure Execute;
@@ -31,33 +35,37 @@ begin
   FGraph := Graph;
   FFromPoint := FromPoint;
   FCurrentPath := TGraphPath.Create;
+  FBypassPath := TGraphPath.Create;
 end;
 
 procedure TTask3.Execute;
 begin
-  Recursion(FFromPoint, 0);
+  Recursion(FFromPoint);
+  PrintPath(FBypassPath);
 end;
 
-procedure TTask3.Recursion(Point, Weight: integer);
+procedure TTask3.Recursion(Point: integer);
 var
   Offset: integer;
   Edge: TGraphEdge;
   HasPoint: boolean;
 begin
-  HasPoint := HasPointCurrentPath(Point);
+  if Not HasPointInPath(Point, FBypassPath) then
+    FBypassPath.AddPoint(Point, 0);
 
-  FCurrentPath.AddPoint(Point, Weight);
-  PrintPath(FCurrentPath);
+  HasPoint := HasPointInPath(Point, FCurrentPath);
+
+  FCurrentPath.AddPoint(Point, 0);
 
   if (FCurrentPath.GetLength > 1) and (Point = FCurrentPath.GetPoint(0)) then
   begin
-    FCurrentPath.RemovePoint(Weight);
+    FCurrentPath.RemovePoint(0);
     Exit;
   end;
 
   if (HasPoint) or (FCurrentPath.GetLength > MaxPoints) then
   begin
-    FCurrentPath.RemovePoint(Weight);
+    FCurrentPath.RemovePoint(0);
     Exit;
   end;
 
@@ -65,32 +73,29 @@ begin
   while (Offset <> -1) do
   begin
     Edge := FGraph.GetEdge(Offset);
-    Recursion(Edge.Point2, Edge.Weight);
+    Recursion(Edge.Point2);
     Offset := FGraph.GetNextOutgoingEdgeIndex(Point, Offset);
   end;
 
-  PrintPath(FCurrentPath);
-  FCurrentPath.RemovePoint(Weight);
+  FCurrentPath.RemovePoint(0);
 end;
 
 procedure TTask3.PrintPath(Path: TGraphPath);
 begin
-  if (Path.GetLength > 0) then
-  begin
-    Path.Print;
-    Writeln;
-  end
-  else
-    Writeln('no path');
+  Writeln;
+  Writeln('Путь обхода в глубину: ');
+  Writeln;
+  Path.Print;
+  Writeln;
 end;
 
-function TTask3.HasPointCurrentPath(Point: integer): boolean;
+function TTask3.HasPointInPath(Point: integer; Path: TGraphPath): boolean;
 var
   Index: integer;
 begin
   Result := False;
-  for Index := 0 to FCurrentPath.GetLength - 1 do
-    if (FCurrentPath.GetPoint(Index) = Point) then
+  for Index := 0 to Path.GetLength - 1 do
+    if (Path.GetPoint(Index) = Point) then
     begin
       Result := True;
       break;

@@ -1,3 +1,6 @@
+//
+// Задача 2: Определить самый длинный цикл в графе.
+//
 unit Task2;
 
 {$mode objfpc}{$H+}
@@ -16,7 +19,7 @@ type
     FGraph: TGraph;
     FBestPath, FCurrentPath: TGraphPath;
     procedure Recursion(Point, Weight: integer);
-    function HasPointCurrentPath(Point: integer): boolean;
+    function HasPointInPath(Point: integer; Path: TGraphPath): boolean;
   public
     constructor Create(Graph: TGraph);
     procedure Execute;
@@ -50,10 +53,10 @@ begin
   if (Path.GetLength > 0) then
   begin
     Path.Print;
-    Writeln(' (weight: ', FBestPath.GetWeight, ')');
+    Writeln(' (вес: ', FBestPath.GetWeight, ')');
   end
   else
-    Writeln('no path');
+    Writeln('нет циклов');
 end;
 
 procedure TTask2.Recursion(Point, Weight: integer);
@@ -62,7 +65,7 @@ var
   Edge: TGraphEdge;
   HasPoint: boolean;
 begin
-  HasPoint := HasPointCurrentPath(Point);
+  HasPoint := HasPointInPath(Point, FCurrentPath);
 
   FCurrentPath.AddPoint(Point, Weight);
 
@@ -90,13 +93,13 @@ begin
   FCurrentPath.RemovePoint(Weight);
 end;
 
-function TTask2.HasPointCurrentPath(Point: integer): boolean;
+function TTask2.HasPointInPath(Point: integer; Path: TGraphPath): boolean;
 var
   Index: integer;
 begin
   Result := False;
-  for Index := 0 to FCurrentPath.GetLength - 1 do
-    if (FCurrentPath.GetPoint(Index) = Point) then
+  for Index := 0 to Path.GetLength - 1 do
+    if (Path.GetPoint(Index) = Point) then
     begin
       Result := True;
       break;

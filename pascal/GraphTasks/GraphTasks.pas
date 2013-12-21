@@ -2,8 +2,7 @@ program GraphTasks;
 
 {$mode objfpc}{$H+}
 
-uses {$IFDEF UNIX} {$IFDEF UseCThreads}
-  cthreads, {$ENDIF} {$ENDIF}
+uses
   Classes,
   SysUtils,
   CustApp,
@@ -12,6 +11,7 @@ uses {$IFDEF UNIX} {$IFDEF UseCThreads}
   Task1,
   Task2,
   Task3,
+  Task4,
   Task5,
   Task6;
 
@@ -75,6 +75,7 @@ type
       1: Task := TTask1.Create(Graph);
       2: Task := TTask2.Create(Graph);
       3: Task := TTask3.Create(Graph, StrToInt(GetOptionValue('from-point')));
+      4: Task := TTask4.Create(Graph, StrToInt(GetOptionValue('from-point')));
       5: Task := TTask5.Create(Graph, StrToInt(GetOptionValue('from-point')));
       6: Task := TTask6.Create(Graph);
       else
@@ -131,12 +132,12 @@ type
     Writeln;
     Writeln('Usage: ', ExtractFileName(ExeName), ' <TaskNum> [<InFile>] [Options]');
     Writeln;
-    Writeln('  <TaskNum> - A digit from 1 to 8');
+    Writeln('  <TaskNum> - A digit from 1 to 6');
     Writeln('  <InFile>  - A file name of input graph');
     Writeln;
     Writeln('Options:');
     Writeln;
-    Writeln('  --from-point=N        Starting point for task #3 & #5');
+    Writeln('  --from-point=N        Starting point for task #3, #4, #5');
     Writeln;
   end;
 

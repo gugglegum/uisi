@@ -27,6 +27,7 @@ type
 
   public
     constructor Create;
+    procedure Clear;
     function HasEdge(Point1, Point2: integer): boolean;
     procedure AddEdge(Point1, Point2, Weight: integer);
     function GetEdge(Index: integer): TGraphEdge;
@@ -59,6 +60,11 @@ type
 implementation
 
 constructor TGraph.Create;
+begin
+  Clear();
+end;
+
+procedure TGraph.Clear;
 begin
   FNumPoints := 0;
   FNumEdges := 0;
@@ -139,7 +145,7 @@ end;
 
 constructor TGraphPath.Create;
 begin
-  Clean;
+  Clean();
 end;
 
 procedure TGraphPath.Clean;
